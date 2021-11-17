@@ -14,12 +14,17 @@ public class Subscriber extends SocketHolder{
 
     public boolean subscribe(String topic) {
         ZMsg replyZMsg = null;
-
+        int counter = 0;
         while(replyZMsg == null) {
             ZMsg reqZMsg = new UnidentifiedMessage(Subscriber.SUBCMD,
                 Collections.singletonList(topic)).newZMsg();
             reqZMsg.send(this.socket);
             replyZMsg = this.receiveMsg();
+            ++counter;
+            if(counter == 5){
+                System.out.println("Could not connect to proxy, cancelling operation");
+                return false;
+            }
         }
 
         UnidentifiedMessage reply = new UnidentifiedMessage(replyZMsg);
@@ -35,7 +40,7 @@ public class Subscriber extends SocketHolder{
 
     public boolean unsubscribe(String topic) {
         ZMsg replyZMsg = null;
-
+        int counter = 0;
         while(replyZMsg == null) {
 
             ZMsg reqZMsg = new UnidentifiedMessage(Subscriber.UNSUBCMD,
@@ -43,6 +48,12 @@ public class Subscriber extends SocketHolder{
             reqZMsg.send(this.socket);
 
             replyZMsg = this.receiveMsg();
+
+            ++counter;
+            if(counter == 5){
+                System.out.println("Could not connect to proxy, cancelling operation");
+                return false;
+            }
         }
 
         UnidentifiedMessage reply = new UnidentifiedMessage(replyZMsg);
@@ -61,12 +72,18 @@ public class Subscriber extends SocketHolder{
 
         while (true) {
             ZMsg replyZMsg = null;
+            int counter = 0;
             while(replyZMsg==null) {
                 ZMsg reqZMsg = new UnidentifiedMessage(Subscriber.GETCMD,
                         Collections.singletonList(topic)).newZMsg();
                 reqZMsg.send(this.socket);
 
                 replyZMsg = this.receiveMsg();
+                ++counter;
+                if(counter == 5){
+                    System.out.println("Could not connect to proxy, cancelling operation");
+                    return "";
+                }
             }
             UnidentifiedMessage reply = new UnidentifiedMessage(replyZMsg);
             if (!reply.getCmd().equals(GETCMD) || reply.getArg(0).equals(Proxy.ERRREPLY)) {
